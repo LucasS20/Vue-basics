@@ -1,0 +1,12 @@
+{
+    "configurations": [
+
+        {
+            "name": "dev (1)",
+            "type": "npm",
+            "workingDir": "C:\\Users\\lucas_9pf27pk\\OneDrive\\Área de Trabalho\\Projetos\\treinamento-vue\\treinamento-vue",
+            "command": "run",
+            "scripts": "serve"
+        }
+    ]
+}
