@@ -1,12 +1,22 @@
 <script setup>
-import {onMounted} from "vue";
+import {computed, ref} from "vue";
 
 const props = defineProps({
     job: {type: Object, default: () => ({})}
 })
-onMounted(() => {
-    console.log(props.job)
+const showFullDescription = ref(false);
+
+const mostrarDescricaoCompleta = () => {
+    showFullDescription.value = !showFullDescription.value;
+}
+const truncatedDescription = computed(() => {
+    let description = props.job.description;
+    if (!showFullDescription.value) {
+        description = description.substring(0, 120).concat('...');
+    }
+    return description;
 })
+
 </script>
 
 <template>
@@ -18,7 +28,12 @@ onMounted(() => {
             </div>
 
             <div class="mb-5">
-                {{ props.job.description }}
+                {{ truncatedDescription }}
+                <div>
+                    <button @click="mostrarDescricaoCompleta" class="text-green-500 hover:text-green-600 mb-5">
+                        {{ showFullDescription ? 'Mostrar menos' : 'Mostrar mais' }}
+                    </button>
+                </div>
             </div>
 
             <h3 class="text-green-500 mb-2">{{ props.job.salary }}</h3>
@@ -30,12 +45,11 @@ onMounted(() => {
                     <i class="fa-solid fa-location-dot text-lg"></i>
                     {{ props.job.location }}
                 </div>
-                <a
-                    :href="`/job/ ${job.id}`"
+                <RouterLink
                     class="h-[36px] bg-green-500 hover:bg-green-600 text-white px-4 py-2 rounded-lg text-center text-sm"
-                >
+                    :to="`/jobs/${job.id} `">
                     Read More
-                </a>
+                </RouterLink>
             </div>
         </div>
     </div>
