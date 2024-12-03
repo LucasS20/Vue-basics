@@ -21,7 +21,7 @@
 </template>
 
 <script setup>
-import {ref} from 'vue';
+import {onMounted, ref} from 'vue';
 
 const name = ref('Lucas');
 const situacao = ref('ativo');
@@ -36,6 +36,16 @@ const trocarStatus = () => {
     situacao.value = 'ativo';
   }
 }
+onMounted(async () => {
+  try {
+    const response = await fetch('https://jsonplaceholder.typicode.com/todos');
+    const data = await response.json();
+    tarefas.value = data.map(todo => todo.title);
+
+  } catch (error) {
+    console.log('Erro na requisição')
+  }
+});
 const addTarefa = () => {
   if (newTask.value.trim() !== '') {
     tarefas.value.push(newTask.value)
