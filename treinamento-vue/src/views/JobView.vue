@@ -1,9 +1,11 @@
 <script setup>
-import {reactive, onMounted} from "vue";
-import {useRoute, RouterLink} from "vue-router";
-import axios from "axios";
+import {onMounted, reactive} from "vue";
+import {RouterLink, useRoute} from "vue-router";
 import PulseLoader from 'vue-spinner/src/PulseLoader.Vue'
 import BackButton from "@/components/BackButton.vue";
+import {toast} from "@/toast/toast.ts"
+import router from "@/router/index.ts";
+import {backendService} from '@/backend/backend'
 
 const route = useRoute();
 const jobId = route.params.id;
@@ -12,19 +14,31 @@ const state = reactive({
     job: {},
     isLoading: true,
 })
-
 onMounted(async () => {
     try {
-        const response = await axios.get(`http://localhost:8000/jobs/${jobId}`);
-        state.job = response.data;
+        state.job = await backendService.get(`jobs/${jobId}`);
     } catch (error) {
+        toast.error(`O Emprego com o id ${jobId} não existe`)
+        await router.push('/jobs')
         console.error('Erro no get dos jobs', error)
     } finally {
         setTimeout(() => {
             state.isLoading = false;
-        }, 5000);
+        }, 1000);
     }
 })
+
+
+const apagarJob = () => {
+    try {
+        backendService.delete(`jobs/${jobId}`);
+        toast.success('Job deletado com sucesso');
+        router.push('/jobs');
+    } catch (error) {
+        toast.error('Ocorreu um erro ao deletar o Job');
+        console.error(error)
+    }
+}
 </script>
 
 <template>
@@ -92,13 +106,14 @@ onMounted(async () => {
                     <!-- Manage -->
                     <div class="bg-white p-6 rounded-lg shadow-md mt-6">
                         <h3 class="text-xl font-bold mb-6">Manage Job</h3>
-                        <a
-                            href="add-job.html"
+                        <RouterLink
+                            :to="`/jobs/edit/${jobId}`"
                             class="bg-green-500 hover:bg-green-600 text-white text-center font-bold py-2 px-4 rounded-full w-full focus:outline-none focus:shadow-outline mt-4 block"
-                        >Edit Job</a
+                        >Edit Job
+                        </RouterLink
                         >
-                        <button
-                            class="bg-red-500 hover:bg-red-600 text-white font-bold py-2 px-4 rounded-full w-full focus:outline-none focus:shadow-outline mt-4 block"
+                        <button @click="apagarJob"
+                                class="bg-red-500 hover:bg-red-600 text-white font-bold py-2 px-4 rounded-full w-full focus:outline-none focus:shadow-outline mt-4 block"
                         >
                             Delete Job
                         </button>

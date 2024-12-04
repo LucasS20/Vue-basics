@@ -1,11 +1,16 @@
 <script setup>
-import {reactive} from "vue";
-import axios from "axios";
+import {onMounted, reactive} from "vue";
 import router from "@/router/index.ts";
 import {toast} from "@/toast/toast.ts"
 import {backendService} from "@/backend/backend.ts";
+import {useRoute} from "vue-router";
 
-
+const route = useRoute();
+onMounted(async () => {
+    const job = await getJob()
+    await setarValoresForm(job);
+})
+const jobId = route.params.id;
 const form = reactive({
     type: 'Full-Time',
     title: '',
@@ -21,6 +26,13 @@ const form = reactive({
 
 })
 
+const getJob = async () => {
+    try {
+        return await backendService.get(`/jobs/${jobId}`);
+    } catch (error) {
+        toast.error(`Houve um erro ao recuperar o emprego com o id ${jobId}`);
+    }
+}
 const mapearFormPraObject = () => {
     const objetoMapeado = {};
     const keys = (Object.keys(form));
@@ -29,16 +41,24 @@ const mapearFormPraObject = () => {
     })
     return objetoMapeado;
 }
+const setarValoresForm = (job) => {
+    const keys = (Object.keys(form));
+    keys.forEach(key => {
+        form[key] = job[key];
+    })
+}
 
 const handleSubmit = async () => {
     try {
         const objetoMapeado = mapearFormPraObject();
-        const response = await backendService.post('/jobs', objetoMapeado);
-        await router.push(`/jobs/${response.id}`)
-        toast.success('Emprego criado com sucesso')
+        const response = await backendService.put(`/jobs/${jobId}`, objetoMapeado);
+        toast.success('Emprego atualizado com sucesso');
+        await router.push(`/jobs/${jobId}`);
     } catch (error) {
-        toast.error('Houve um erro ao criar um novo emprego');
-        console.error(error);
+        toast.error('Houve um erro ao editar o emprego')
+        console.error('Houve um erro ao editar o emprego', error)
+    } finally {
+
     }
 };
 
@@ -49,7 +69,7 @@ const handleSubmit = async () => {
         <div class="container m-auto max-w-2xl py-24">
             <div class="bg-white px-6 py-8 mb-4 shadow-md rounded-md border m-4 md:m-0">
                 <form @submit.prevent="handleSubmit">
-                    <h2 class="text-3xl text-center font-semibold mb-6">Add Job</h2>
+                    <h2 class="text-3xl text-center font-semibold mb-6">Editar emprego</h2>
 
                     <div class="mb-4">
                         <label for="type" class="block text-gray-700 font-bold mb-2"
@@ -209,7 +229,7 @@ const handleSubmit = async () => {
                             class="bg-green-500 hover:bg-green-600 tet-white font-bold py-2 px-4 rounded-full w-full focus:outline-none focus:shadow-outline"
                             type="submit"
                         >
-                            Add Job
+                            Editar Emprego
                         </button>
                     </div>
                 </form>
